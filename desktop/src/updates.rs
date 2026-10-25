@@ -37,6 +37,7 @@ pub(crate) enum UpdateStatus {
 
 struct Parked {
     update: tauri_plugin_updater::Update,
+    #[cfg_attr(not(any(target_os = "macos", target_os = "windows")), allow(dead_code))]
     artifact: Artifact,
 }
 

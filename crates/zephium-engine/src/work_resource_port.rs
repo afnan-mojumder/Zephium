@@ -83,6 +83,7 @@ struct State {
     notification_pending: bool,
 }
 
+#[cfg_attr(not(any(target_os = "macos", target_os = "windows")), allow(dead_code))]
 pub(crate) struct WorkResourceGuard {
     #[cfg(all(
         target_os = "windows",
@@ -126,6 +127,7 @@ pub(crate) struct WorkResourceGuard {
 pub(crate) struct WorkNotificationPermit {
     _permit: AgentTaskPermit,
 }
+#[cfg_attr(not(any(target_os = "macos", target_os = "windows")), allow(dead_code))]
 impl WorkResourceGuard {
     #[cfg(feature = "native-agentic-work-lifetime-diagnostic")]
     pub(crate) fn record_failure_cause(
@@ -298,11 +300,16 @@ impl WorkResourceGuard {
     }
 
     pub(crate) fn dispatch_notification(&self, task: impl FnOnce() + Send + 'static) {
+        #[cfg(all(not(any(target_os = "macos", target_os = "windows")), not(test)))]
+        {
+            let _ = task;
+        }
         #[cfg(test)]
         if let Some(dispatch) = self.notification_dispatch.lock().unwrap().clone() {
             if !dispatch(Box::new(task)) {
                 self.fail();
             }
+            #[allow(clippy::needless_return)]
             return;
         }
         #[cfg(target_os = "macos")]
@@ -1119,6 +1126,7 @@ impl AgentPortAdmission {
 }
 
 impl AgentContextTask {
+    #[cfg_attr(not(any(target_os = "macos", target_os = "windows")), allow(dead_code))]
     pub(crate) fn work_ingress_matches(&self, guards: Vec<Arc<WorkResourceGuard>>) -> bool {
         if guards
             .iter()

@@ -54,6 +54,7 @@ enum Access {
     Sites { sites: Vec<String> },
 }
 
+#[cfg_attr(not(any(target_os = "macos", target_os = "windows")), allow(dead_code))]
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 struct Registry {
     extensions: Vec<Entry>,

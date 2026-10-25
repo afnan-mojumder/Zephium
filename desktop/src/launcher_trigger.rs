@@ -2,6 +2,8 @@
 //! record, and on macOS an opt-in double tap of a modifier. Every good
 //! two-key combination is already claimed by some other tool, so the choice
 //! belongs to the person, and the settings page reports whether it holds.
+
+#![cfg_attr(target_os = "linux", allow(dead_code))]
 use std::str::FromStr;
 use std::sync::Mutex;
 

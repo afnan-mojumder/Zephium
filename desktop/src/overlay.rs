@@ -842,6 +842,7 @@ pub fn request(app: &tauri::AppHandle, action: impl FnOnce(&Overlay) + Send + 's
         }
         if let Some(panel) = handle.try_state::<Overlay>() {
             action(&panel);
+            #[allow(clippy::needless_return)]
             return;
         }
         #[cfg(not(target_os = "linux"))]

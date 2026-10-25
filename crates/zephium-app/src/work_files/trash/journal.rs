@@ -1,4 +1,5 @@
 //! A bounded recovery journal in trusted application storage, never the project.
+#![cfg_attr(not(any(target_os = "macos", windows)), allow(dead_code))]
 use super::{Failure, MAX_BYTES};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};

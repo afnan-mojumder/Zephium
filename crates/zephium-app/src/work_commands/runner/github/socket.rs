@@ -1,5 +1,7 @@
 //! One private AF_UNIX stream, never an IP listener or a configurable proxy.
 //! Nonblocking IO keeps timeout/drop independent of blocking-pool scheduling.
+
+#![cfg_attr(not(any(target_os = "macos", windows)), allow(dead_code))]
 use super::super::Failure;
 use socket2::{Domain, SockAddr, Socket, Type};
 use std::{

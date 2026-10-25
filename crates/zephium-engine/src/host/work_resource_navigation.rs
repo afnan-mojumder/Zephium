@@ -503,7 +503,10 @@ impl WorkNativeResource {
                         && view.view().load_url(expected.as_url().as_str()).is_ok()
                 });
                 #[cfg(not(target_os = "macos"))]
-                let dispatched = false;
+                let dispatched = {
+                    let _ = (source, operation, &gate);
+                    false
+                };
                 if !dispatched {
                     self.finish_history_back(Err(ContextPortFailure::NativeRefused));
                 } else if let Some(pending) = self.history_back.as_mut() {

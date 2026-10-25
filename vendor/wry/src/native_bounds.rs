@@ -61,12 +61,14 @@ pub(crate) const CUSTOM_PROTOCOL_HEADER_VALUE_LIMIT: NativeStringLimit = NativeS
 };
 pub(crate) const CUSTOM_PROTOCOL_HEADER_COUNT_LIMIT: usize = 128;
 pub(crate) const CUSTOM_PROTOCOL_HEADER_BYTES_LIMIT: usize = 64 * 1_024;
+#[allow(dead_code)]
 pub(crate) const CUSTOM_PROTOCOL_BODY_LIMIT: usize = 64 * 1_024;
 
 #[derive(Clone, Copy, Debug, Default)]
 pub(crate) struct CustomProtocolRequestBudget {
   header_count: usize,
   header_bytes: usize,
+  #[allow(dead_code)]
   body_bytes: usize,
 }
 
@@ -97,6 +99,7 @@ impl CustomProtocolRequestBudget {
     true
   }
 
+  #[allow(dead_code)]
   pub(crate) fn admit_body_chunk(&mut self, bytes: usize) -> bool {
     let Some(body_bytes) = self.body_bytes.checked_add(bytes) else {
       return false;

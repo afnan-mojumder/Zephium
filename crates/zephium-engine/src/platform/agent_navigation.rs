@@ -91,6 +91,7 @@ impl AgentNavigationObservation {
         self.location_check_requested
     }
 
+    #[cfg_attr(not(any(target_os = "macos", target_os = "windows")), allow(dead_code))]
     pub(crate) fn into_terminal(self) -> Option<AgentNavigationTerminal> {
         self.terminal
     }

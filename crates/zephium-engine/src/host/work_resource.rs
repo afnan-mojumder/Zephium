@@ -180,6 +180,7 @@ impl EngineHost {
     }
 }
 
+#[cfg_attr(not(any(target_os = "macos", target_os = "windows")), allow(dead_code))]
 pub(super) struct WorkNativeResource {
     media_pending: bool,
     media_batch: Option<std::rc::Rc<media::Batch>>,
@@ -246,6 +247,7 @@ pub(super) struct WorkNativeResource {
     #[cfg(feature = "native-agentic-work-resource-probe")]
     presentation_observations: u16,
 }
+#[cfg_attr(not(any(target_os = "macos", target_os = "windows")), allow(dead_code))]
 impl WorkNativeResource {
     #[cfg(feature = "native-agentic-work-resource-probe")]
     fn record_construction_failure(&self, cause: &'static str) {
@@ -1132,6 +1134,10 @@ impl EngineHost {
                 resource.handle_human(task, self.main_dispatch.clone());
             }
             Operation::Acquire => {
+                #[cfg_attr(
+                    not(any(target_os = "macos", target_os = "windows")),
+                    allow(unused_mut)
+                )]
                 let mut accepted = request.lease().is_some_and(|lease| {
                     work_browser_monotonic_now()
                         .is_some_and(|now| guard.acquisition_current(lease, now))
@@ -2004,6 +2010,7 @@ impl EngineHost {
         }
     }
 
+    #[cfg_attr(not(any(target_os = "macos", target_os = "windows")), allow(dead_code))]
     pub(super) fn force_shutdown_work_resources(&mut self) -> bool {
         let was_empty = self.work_resources.is_empty();
         for resource in self.work_resources.values_mut() {

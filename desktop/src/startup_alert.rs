@@ -10,6 +10,7 @@ const ISSUES_URL: &str = "https://github.com/zephium-browser/Zephium/issues";
 pub(crate) enum StartupProblem {
     NewerProfile,
     DamagedProfile,
+    #[cfg_attr(target_os = "linux", allow(dead_code))]
     UnsupportedSystem,
     #[cfg(target_os = "windows")]
     RendererFailed,

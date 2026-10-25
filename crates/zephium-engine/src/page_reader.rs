@@ -189,6 +189,7 @@ pub enum PageGlow {
 }
 
 impl PageGlow {
+    #[cfg_attr(not(any(target_os = "macos", target_os = "windows")), allow(dead_code))]
     pub(crate) const fn name(self) -> &'static str {
         match self {
             Self::Off => "off",
@@ -371,13 +372,18 @@ impl PageRead {
 
 /// Reads kept per tab: a plan stays bound to the exact read it was made
 /// on, however many reads of the page happen meanwhile.
+#[cfg_attr(not(any(target_os = "macos", target_os = "windows")), allow(dead_code))]
 const MAX_KEPT_READS: usize = 8;
 
+#[cfg_attr(not(any(target_os = "macos", target_os = "windows")), allow(dead_code))]
 type KeptReads = HashMap<ItemId, std::collections::VecDeque<Arc<PageRead>>>;
 
+#[cfg_attr(not(any(target_os = "macos", target_os = "windows")), allow(dead_code))]
 static READS: Mutex<Option<KeptReads>> = Mutex::new(None);
+#[cfg_attr(not(any(target_os = "macos", target_os = "windows")), allow(dead_code))]
 static NEXT_READ: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
 
+#[cfg_attr(not(any(target_os = "macos", target_os = "windows")), allow(dead_code))]
 fn with_reads<T>(apply: impl FnOnce(&mut KeptReads) -> T) -> T {
     let mut reads = READS
         .lock()
@@ -387,11 +393,13 @@ fn with_reads<T>(apply: impl FnOnce(&mut KeptReads) -> T) -> T {
 
 /// The read of `tab` named `id`, while it is kept. Another read never
 /// stands in for it.
+#[cfg_attr(not(any(target_os = "macos", target_os = "windows")), allow(dead_code))]
 pub fn planned_read(tab: ItemId, id: u64) -> Option<Arc<PageRead>> {
     with_reads(|reads| reads.get(&tab)?.iter().find(|read| read.id == id).cloned())
 }
 
 /// Keeps `read` for the steps that may be planned on it; returns its id.
+#[cfg_attr(not(any(target_os = "macos", target_os = "windows")), allow(dead_code))]
 pub(crate) fn publish_read(tab: ItemId, mut read: PageRead) -> u64 {
     let id = NEXT_READ.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     read.id = id;
@@ -409,6 +417,7 @@ pub(crate) fn publish_read(tab: ItemId, mut read: PageRead) -> u64 {
 }
 
 #[cfg(feature = "agentic-browser")]
+#[cfg_attr(not(any(target_os = "macos", target_os = "windows")), allow(dead_code))]
 pub(crate) mod read {
     //! A runtime snapshot projected into passages through the semantic read
     //! policy: public content only, the standard budget, verbatim only when

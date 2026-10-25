@@ -1,4 +1,5 @@
 //! Approved, recoverable removal. Generic file deletion remains unavailable.
+#![cfg_attr(not(any(target_os = "macos", windows)), allow(dead_code))]
 mod journal;
 mod move_file;
 mod wait;

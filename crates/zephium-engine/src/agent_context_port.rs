@@ -1929,6 +1929,7 @@ fn supports_native_request(request: &ContextNativeRequest) -> bool {
     }
 }
 
+#[cfg_attr(not(any(target_os = "macos", target_os = "windows")), allow(dead_code))]
 const fn supports_owned_transition(kind: ContextOperationKind) -> bool {
     #[cfg(target_os = "windows")]
     {

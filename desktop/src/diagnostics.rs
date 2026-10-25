@@ -2,6 +2,8 @@
 //! process aborts, and showing that folder to the person. Nothing here sends
 //! anything anywhere; a report leaves the device only if someone attaches it.
 
+#![cfg_attr(target_os = "linux", allow(dead_code))]
+
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
 

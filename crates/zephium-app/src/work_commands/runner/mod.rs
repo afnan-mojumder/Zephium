@@ -28,6 +28,7 @@ use crate::work_files::WorkFileGrant;
 use snapshot::Snapshot;
 use std::{future::Future, path::Path};
 
+#[cfg_attr(not(any(target_os = "macos", windows)), allow(dead_code))]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum Failure {
     Unavailable,
@@ -183,6 +184,7 @@ pub(crate) fn ensure_available() -> Result<(), Failure> {
     Err(Failure::Unavailable)
 }
 
+#[cfg_attr(not(any(target_os = "macos", windows)), allow(dead_code))]
 #[derive(Clone, Copy)]
 enum GitOperation {
     Initialize,
@@ -191,6 +193,7 @@ enum GitOperation {
     IntentToAdd,
     Read(ReadOperation),
 }
+#[cfg_attr(not(any(target_os = "macos", windows)), allow(dead_code))]
 impl GitOperation {
     fn arguments(self, snapshot: &Snapshot) -> Vec<std::ffi::OsString> {
         let mut args: Vec<std::ffi::OsString> = [
@@ -298,6 +301,7 @@ where
     }
 }
 
+#[cfg_attr(not(any(target_os = "macos", windows)), allow(dead_code))]
 fn output_text(bytes: Vec<u8>) -> Result<String, Failure> {
     let text = String::from_utf8(bytes).map_err(|_| Failure::Failed)?;
     if zephium_agentic::contains_recognized_secret(&text) {

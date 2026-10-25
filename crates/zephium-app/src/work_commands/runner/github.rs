@@ -1,5 +1,7 @@
 //! The child can request one opaque local-socket route; only the captured broker
 //! closure can decide the remote resource. No provider credential enters gh.
+
+#![cfg_attr(not(any(target_os = "macos", windows)), allow(dead_code))]
 use super::{Failure, Output};
 use std::{
     future::Future,
