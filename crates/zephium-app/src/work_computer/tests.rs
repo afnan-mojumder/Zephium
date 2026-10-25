@@ -521,9 +521,15 @@ fn reviews_only_actual_approved_before_after_edits() {
 fn recovery_tools_require_approval_and_restore_without_overwrite() {
     serially(async {
         let (_home, tools, root) = project();
+        #[cfg(target_os = "macos")]
         let storage = tempfile::Builder::new()
             .prefix("work-recovery-app-")
             .tempdir_in("/private/tmp")
+            .unwrap();
+        #[cfg(not(target_os = "macos"))]
+        let storage = tempfile::Builder::new()
+            .prefix("work-recovery-app-")
+            .tempdir()
             .unwrap();
         crate::work_files::trash::install_root(storage.path().canonicalize().unwrap());
         let file = root.join("trash-fixture.txt");

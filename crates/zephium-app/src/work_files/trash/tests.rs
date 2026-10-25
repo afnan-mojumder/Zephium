@@ -9,9 +9,14 @@ struct Fixture {
 }
 impl Fixture {
     fn new() -> Self {
+        let tmp = if cfg!(target_os = "macos") {
+            PathBuf::from("/private/tmp")
+        } else {
+            std::env::temp_dir()
+        };
         let scratch = tempfile::Builder::new()
             .prefix("work-recovery-fixture-")
-            .tempdir_in("/private/tmp")
+            .tempdir_in(&tmp)
             .unwrap();
         let root = scratch.path().canonicalize().unwrap();
         let storage = root.join("application");

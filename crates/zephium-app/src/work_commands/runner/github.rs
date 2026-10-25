@@ -249,12 +249,12 @@ fn exact_request(bytes: &[u8], port: u16, nonce: &str) -> bool {
 mod tests {
     use super::*;
     fn fixture_listener() -> (tempfile::TempDir, Listener, std::path::PathBuf) {
-        #[cfg(unix)]
+        #[cfg(target_os = "macos")]
         let directory = tempfile::Builder::new()
             .prefix("zgh-")
             .tempdir_in("/private/tmp")
             .unwrap();
-        #[cfg(not(unix))]
+        #[cfg(not(target_os = "macos"))]
         let directory = tempfile::Builder::new().prefix("zgh-").tempdir().unwrap();
         let path = directory.path().canonicalize().unwrap().join("broker.sock");
         let listener = Listener::bind(&path).unwrap();

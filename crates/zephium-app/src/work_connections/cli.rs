@@ -477,9 +477,15 @@ mod tests {
             .lock()
             .unwrap_or_else(|e| e.into_inner());
         assert!(ensure_available().is_err());
+        #[cfg(target_os = "macos")]
         let directory = tempfile::Builder::new()
             .prefix("work-cli-gate-")
             .tempdir_in("/private/tmp")
+            .unwrap();
+        #[cfg(not(target_os = "macos"))]
+        let directory = tempfile::Builder::new()
+            .prefix("work-cli-gate-")
+            .tempdir()
             .unwrap();
         let marker = directory.path().join("executed");
         let program = directory.path().join("fixture-cli");
