@@ -9,6 +9,7 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 
+use zephium_agentic::ContextOperationKind;
 use zephium_agentic::{
     AgentBrowserPort, ContextCancellationSettlement, ContextConstructionSettlement,
     ContextCookieTransferFailure, ContextCookieTransferOutcome, ContextCookieTransferRequest,
@@ -20,10 +21,9 @@ use zephium_agentic::{
     SemanticScreenshotNativeCompletion, SemanticScreenshotNativeRequest,
     MAX_PENDING_NATIVE_CONTEXT_TASKS, MAX_PENDING_SEMANTIC_SCREENSHOTS,
 };
-#[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
+#[cfg(any(target_os = "macos", target_os = "windows"))]
 use zephium_agentic::{
-    ContextJoin, ContextNavigationReplacement, ContextNavigationTarget, ContextOperationKind,
-    ContextRendererLoss,
+    ContextJoin, ContextNavigationReplacement, ContextNavigationTarget, ContextRendererLoss,
 };
 #[cfg(target_os = "macos")]
 use zephium_agentic::{SemanticScreenshotNativeCapture, SemanticScreenshotNativeFailure};
@@ -427,7 +427,6 @@ impl AgentPortAdmission {
     // Only the exact native shutdown task may attest its own sealed cohort.
     // Its permit is still held; every other request/capture must be absent.
     fn verify_native_shutdown(&self, snapshot: ContextNativeResourceSnapshot) {
-        #[cfg(any(target_os = "macos", target_os = "windows"))]
         if !self.work_is_absent() {
             return;
         }
@@ -2437,9 +2436,15 @@ mod tests {
         settle_factory_native_shutdown(&factory);
         let second = factory.begin(|_| {}).unwrap();
         assert!(!Arc::ptr_eq(&first, &second));
+        #[cfg(any(target_os = "macos", target_os = "windows"))]
         assert_eq!(
             first.dispatch(construction_request()),
             ContextDispatch::Rejected(ContextPortFailure::Shutdown)
+        );
+        #[cfg(not(any(target_os = "macos", target_os = "windows")))]
+        assert_eq!(
+            first.dispatch(construction_request()),
+            ContextDispatch::Unsupported
         );
         assert_eq!(
             first.audit_resources(ContextResourceAuditId::new(2).unwrap()),
@@ -2601,9 +2606,15 @@ mod tests {
         settle_factory_native_shutdown(&factory);
         let current = factory.begin(|_| {}).unwrap();
         old.fail_invariant();
+        #[cfg(any(target_os = "macos", target_os = "windows"))]
         assert_eq!(
             current.dispatch(construction_request()),
             ContextDispatch::Rejected(ContextPortFailure::Shutdown)
+        );
+        #[cfg(not(any(target_os = "macos", target_os = "windows")))]
+        assert_eq!(
+            current.dispatch(construction_request()),
+            ContextDispatch::Unsupported
         );
         assert!(matches!(
             factory.begin(|_| {}),
@@ -2634,9 +2645,15 @@ mod tests {
             slot.seal();
             let (port, mut factory) = thread.join().unwrap();
             if let Ok(port) = port {
+                #[cfg(any(target_os = "macos", target_os = "windows"))]
                 assert_eq!(
                     port.dispatch(construction_request()),
                     ContextDispatch::Rejected(ContextPortFailure::Shutdown)
+                );
+                #[cfg(not(any(target_os = "macos", target_os = "windows")))]
+                assert_eq!(
+                    port.dispatch(construction_request()),
+                    ContextDispatch::Unsupported
                 );
             }
             assert!(matches!(

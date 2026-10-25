@@ -25,10 +25,13 @@ use std::sync::Arc;
 #[cfg(any(target_os = "macos", target_os = "windows"))]
 use std::time::{Duration, Instant};
 
+#[cfg(any(target_os = "macos", target_os = "windows"))]
+use zephium_agentic::ContextNativeEvent;
 use zephium_agentic::{
-    ContextNativeEvent, ContextNativeResourceCounts, ContextNativeResourceSnapshot,
-    ContextPortFailure, SemanticOrigin,
+    ContextNativeResourceCounts, ContextNativeResourceSnapshot, ContextPortFailure,
 };
+#[cfg(any(target_os = "macos", target_os = "windows", test))]
+use zephium_agentic::{ContextNavigationTarget, SemanticOrigin};
 
 #[cfg(target_os = "windows")]
 use zephium_agentic::{
@@ -5148,7 +5151,7 @@ fn navigation_targets_share_origin(
         .is_some_and(|(prior, current)| prior == current)
 }
 
-#[cfg(any(target_os = "macos", target_os = "windows", test))]
+#[cfg(any(target_os = "macos", target_os = "windows"))]
 fn full_successor(prior: ContextJoin, current: ContextJoin) -> bool {
     prior.identity() == current.identity()
         && prior.frame() == current.frame()
@@ -5158,7 +5161,7 @@ fn full_successor(prior: ContextJoin, current: ContextJoin) -> bool {
         && prior.cancellation_generation().next() == Some(current.cancellation_generation())
 }
 
-#[cfg(any(target_os = "macos", target_os = "windows", test))]
+#[cfg(any(target_os = "macos", target_os = "windows"))]
 fn double_full_successor(prior: ContextJoin, current: ContextJoin) -> bool {
     prior.identity() == current.identity()
         && prior.frame() == current.frame()
@@ -5184,7 +5187,7 @@ fn double_full_successor(prior: ContextJoin, current: ContextJoin) -> bool {
             == Some(current.cancellation_generation())
 }
 
-#[cfg(any(target_os = "macos", target_os = "windows", test))]
+#[cfg(any(target_os = "macos", target_os = "windows"))]
 fn navigation_successor(prior: ContextJoin, current: ContextJoin) -> bool {
     prior.identity() == current.identity()
         && prior.frame() == current.frame()
@@ -5194,7 +5197,7 @@ fn navigation_successor(prior: ContextJoin, current: ContextJoin) -> bool {
         && prior.cancellation_generation() == current.cancellation_generation()
 }
 
-#[cfg(any(target_os = "macos", target_os = "windows", test))]
+#[cfg(any(target_os = "macos", target_os = "windows"))]
 fn double_navigation_successor(prior: ContextJoin, current: ContextJoin) -> bool {
     prior.identity() == current.identity()
         && prior.frame() == current.frame()
@@ -5212,7 +5215,7 @@ fn double_navigation_successor(prior: ContextJoin, current: ContextJoin) -> bool
         && prior.cancellation_generation() == current.cancellation_generation()
 }
 
-#[cfg(any(target_os = "macos", target_os = "windows", test))]
+#[cfg(any(target_os = "macos", target_os = "windows"))]
 fn replacement_then_full_successor(prior: ContextJoin, current: ContextJoin) -> bool {
     prior.identity() == current.identity()
         && prior.frame() == current.frame()
@@ -5230,7 +5233,7 @@ fn replacement_then_full_successor(prior: ContextJoin, current: ContextJoin) -> 
         && prior.cancellation_generation().next() == Some(current.cancellation_generation())
 }
 
-#[cfg(any(target_os = "macos", target_os = "windows", test))]
+#[cfg(any(target_os = "macos", target_os = "windows"))]
 fn replacement_rejoin_matches(
     prior: ContextJoin,
     current: ContextJoin,
@@ -5244,7 +5247,7 @@ fn replacement_rejoin_matches(
     }
 }
 
-#[cfg(any(target_os = "macos", target_os = "windows", test))]
+#[cfg(any(target_os = "macos", target_os = "windows"))]
 fn same_or_full_successor(prior: ContextJoin, current: ContextJoin) -> bool {
     prior == current || full_successor(prior, current)
 }
