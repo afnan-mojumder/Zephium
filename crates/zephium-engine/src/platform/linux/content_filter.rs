@@ -163,6 +163,9 @@ pub(crate) fn install_on_view(
         .webview()
         .user_content_manager()
         .ok_or(ContentRuleApplyFailure::NativeInstallation)?;
+    // SAFETY: Called on the GTK main thread that owns the WebView. `manager.to_glib_none().0`
+    // borrows a live WebKitUserContentManager pointer for the call duration, and `filter.0`
+    // holds a valid, non-null WebKitUserContentFilter pointer kept alive by `policy`.
     unsafe {
         webkit2gtk::ffi::webkit_user_content_manager_add_filter(
             manager.to_glib_none().0,
