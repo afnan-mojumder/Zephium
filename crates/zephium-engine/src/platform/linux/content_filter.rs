@@ -9,8 +9,6 @@ use webkit2gtk::glib::translate::ToGlibPtr;
 use webkit2gtk::{glib, WebViewExt as _};
 use wry::WebViewExtUnix;
 use zephium_core::blocker::ContentRuleApplyFailure;
-#[cfg(test)]
-use zephium_core::blocker::{ContentRules, ContentRulesPayload, DeclarativeRuleFormat};
 
 struct FilterStore(NonNull<webkit2gtk::ffi::WebKitUserContentFilterStore>);
 
@@ -150,6 +148,31 @@ pub(crate) fn install_scoped_on_view(
         manager: Some(manager),
         filter: Some(filter.clone()),
         _pause: Some(registration),
+    })
+}
+
+#[cfg(feature = "agentic-browser")]
+pub(crate) fn install_on_view(
+    view: &wry::WebView,
+    policy: &NativeContentPolicy,
+) -> Result<ContentPolicyRegistration, ContentRuleApplyFailure> {
+    let NativeContentPolicy::Declarative { filter, .. } = policy else {
+        return Ok(ContentPolicyRegistration::allow_all());
+    };
+    let manager = view
+        .webview()
+        .user_content_manager()
+        .ok_or(ContentRuleApplyFailure::NativeInstallation)?;
+    unsafe {
+        webkit2gtk::ffi::webkit_user_content_manager_add_filter(
+            manager.to_glib_none().0,
+            filter.0.as_ptr(),
+        );
+    }
+    Ok(ContentPolicyRegistration {
+        manager: Some(manager),
+        filter: Some(filter.clone()),
+        _pause: None,
     })
 }
 
@@ -599,11 +622,8 @@ unsafe extern "C" fn loaded<F>(
                 LoadedAction::Finish(Err(ContentRuleApplyFailure::NativeCompilation))
             }
         } else if let Some(filter) = NonNull::new(filter) {
-            LoadedAction::Finish(validated_policy(
-                filter,
-                &context.identifier,
-                context.artifact_digest,
-            ))
+            let policy = validated_policy(filter, &context.identifier, context.artifact_digest);
+            LoadedAction::Finish(policy)
         } else {
             LoadedAction::Finish(Err(ContentRuleApplyFailure::NativeCompilation))
         }
@@ -613,7 +633,9 @@ unsafe extern "C" fn loaded<F>(
     )));
     match action {
         LoadedAction::Finish(result) => context.finish(result),
-        LoadedAction::Save => save_after_cache_miss(context),
+        LoadedAction::Save => {
+            save_after_cache_miss(context);
+        }
     }
 }
 
@@ -636,11 +658,12 @@ where
         let bytes_ptr = ToGlibPtr::<*const glib::ffi::GBytes>::to_glib_none(bytes)
             .0
             .cast_mut();
+        let cancellable = context._cancellable.to_glib_none().0;
         Ok::<_, ContentRuleApplyFailure>((
             context._store.0.as_ptr(),
             context.identifier.as_ptr(),
             bytes_ptr,
-            context._cancellable.to_glib_none().0,
+            cancellable,
         ))
     }));
     let (store, identifier, bytes, cancellable) = match prepared {
@@ -772,7 +795,10 @@ mod tests {
     use std::cell::{Cell, RefCell};
     use std::io::Read as _;
     use std::time::Duration;
-    use zephium_core::blocker::{ContentRuleCoverage, ContentRuleDigest};
+    use zephium_core::blocker::{
+        ContentRuleCoverage, ContentRuleDigest, ContentRules, ContentRulesPayload,
+        DeclarativeRuleFormat,
+    };
 
     #[test]
     fn rule_identifier_is_exact_and_bounded() {

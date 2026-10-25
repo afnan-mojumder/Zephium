@@ -6,7 +6,7 @@ pub use agent_context_port::{
 };
 #[cfg(all(
     feature = "agentic-browser",
-    any(target_os = "macos", target_os = "windows")
+    any(target_os = "macos", target_os = "windows", target_os = "linux")
 ))]
 pub use agent_context_port::{work_browser_monotonic_deadline, work_browser_monotonic_now};
 #[cfg(all(target_os = "macos", feature = "native-agentic-work-resource-probe"))]

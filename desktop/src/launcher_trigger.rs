@@ -7,7 +7,9 @@ use std::sync::Mutex;
 
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager};
-use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
+use tauri_plugin_global_shortcut::{Code, Modifiers, Shortcut};
+#[cfg(not(target_os = "linux"))]
+use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 use zephium_core::ports::store::Store;
 
 #[cfg(target_os = "macos")]
@@ -183,21 +185,36 @@ fn system(mods: Modifiers, key: Code) -> bool {
 }
 
 fn register(app: &AppHandle, shortcut: &Shortcut) -> bool {
-    let registered = app
-        .global_shortcut()
-        .on_shortcut(*shortcut, |app, _shortcut, event| {
-            if event.state() == ShortcutState::Pressed {
-                let _ = crate::execute_command(app, "launcher.toggle");
-            }
-        });
-    if let Err(error) = &registered {
-        crate::write_diagnostic(format_args!("launcher: shortcut unavailable: {error}"));
+    #[cfg(target_os = "linux")]
+    {
+        let _ = (app, shortcut);
+        true
     }
-    registered.is_ok()
+    #[cfg(not(target_os = "linux"))]
+    {
+        let registered = app
+            .global_shortcut()
+            .on_shortcut(*shortcut, |app, _shortcut, event| {
+                if event.state() == ShortcutState::Pressed {
+                    let _ = crate::execute_command(app, "launcher.toggle");
+                }
+            });
+        if let Err(error) = &registered {
+            crate::write_diagnostic(format_args!("launcher: shortcut unavailable: {error}"));
+        }
+        registered.is_ok()
+    }
 }
 
 fn unregister(app: &AppHandle, shortcut: &Shortcut) {
-    let _ = app.global_shortcut().unregister(*shortcut);
+    #[cfg(target_os = "linux")]
+    {
+        let _ = (app, shortcut);
+    }
+    #[cfg(not(target_os = "linux"))]
+    {
+        let _ = app.global_shortcut().unregister(*shortcut);
+    }
 }
 
 fn setting(key: &str) -> Option<String> {

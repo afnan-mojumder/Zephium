@@ -12,17 +12,17 @@ mod agent_screenshot_buffer;
 pub(crate) mod form_qualification;
 #[cfg(all(
     feature = "agentic-browser",
-    any(target_os = "macos", target_os = "windows", test)
+    any(target_os = "macos", target_os = "windows", target_os = "linux", test)
 ))]
 pub(crate) mod record_media;
 #[cfg(all(
     feature = "agentic-browser",
-    any(target_os = "macos", target_os = "windows", test)
+    any(target_os = "macos", target_os = "windows", target_os = "linux", test)
 ))]
 pub(crate) mod semantic_pixel_privacy;
 #[cfg(all(
     feature = "agentic-browser",
-    any(target_os = "macos", target_os = "windows", test)
+    any(target_os = "macos", target_os = "windows", target_os = "linux", test)
 ))]
 pub(crate) mod work_human_survey;
 // Only the Windows runtime calls the action helpers; Windows tests keep them honest.
@@ -36,13 +36,13 @@ pub(crate) mod agent_suspension;
 pub(crate) mod cosmetic_pull;
 #[cfg(all(
     feature = "agentic-browser",
-    any(target_os = "macos", target_os = "windows", test)
+    any(target_os = "macos", target_os = "windows", target_os = "linux", test)
 ))]
 #[cfg_attr(test, allow(dead_code))]
 pub(crate) mod page_recipe;
 #[cfg(all(
     feature = "agentic-browser",
-    any(target_os = "macos", target_os = "windows", test)
+    any(target_os = "macos", target_os = "windows", target_os = "linux", test)
 ))]
 pub(crate) mod work_document_navigation;
 

@@ -673,6 +673,9 @@ mod shortcut_tests {
 
     #[test]
     fn focused_shortcut_requires_exact_non_lock_modifiers() {
+        if gtk::init().is_err() {
+            return;
+        }
         let expected = shortcut_modifiers(&launcher_shortcut());
         assert_eq!(
             observed_shortcut_modifiers(

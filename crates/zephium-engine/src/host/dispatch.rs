@@ -397,10 +397,10 @@ pub(crate) fn install(
             views: HashMap::new(),
             #[cfg(all(
                 feature = "agentic-browser",
-                any(target_os = "macos", target_os = "windows")
+                any(target_os = "macos", target_os = "windows", target_os = "linux")
             ))]
             agent_contexts: HashMap::new(),
-            #[cfg(all(feature = "agentic-browser", any(target_os = "macos", target_os = "windows")))]
+            #[cfg(all(feature = "agentic-browser", any(target_os = "macos", target_os = "windows", target_os = "linux")))]
             work_resources: HashMap::new(),
             #[cfg(all(feature = "agentic-browser", target_os = "windows"))]
             agent_cookie_transfers: HashMap::new(),
@@ -717,6 +717,17 @@ where
     F: FnOnce(&mut EngineHost) + 'static,
 {
     with_priority(HostTaskPriority::AgentContextTerminal, None, f)
+}
+
+#[cfg(all(
+    feature = "agentic-browser",
+    not(any(target_os = "macos", target_os = "windows"))
+))]
+pub(crate) fn try_with_agent_context_terminal<F>(_f: F) -> bool
+where
+    F: FnOnce(&mut EngineHost) + 'static,
+{
+    false
 }
 
 /// Exact queued terminal depth used only by the privacy-preserving resource

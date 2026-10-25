@@ -191,6 +191,7 @@ impl Capture {
 
     /// Releases the microphone and returns the words or the audio. With the
     /// on-device recognizer this waits briefly for its final words.
+    #[allow(unused_mut)]
     pub fn finish(mut self) -> Result<Outcome, Fault> {
         #[cfg(any(target_os = "macos", target_os = "windows"))]
         return match self.inner.take() {
@@ -202,6 +203,7 @@ impl Capture {
     }
 
     /// Releases the microphone and discards everything.
+    #[allow(unused_mut)]
     pub fn cancel(mut self) {
         #[cfg(any(target_os = "macos", target_os = "windows"))]
         if let Some(inner) = self.inner.take() {

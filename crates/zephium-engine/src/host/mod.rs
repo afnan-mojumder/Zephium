@@ -53,15 +53,18 @@ mod webext;
 mod webext_windows;
 #[cfg(all(
     feature = "agentic-browser",
-    any(target_os = "macos", target_os = "windows")
+    any(target_os = "macos", target_os = "windows", target_os = "linux")
 ))]
 pub(crate) mod work_frames;
 #[cfg(all(
     feature = "agentic-browser",
-    any(target_os = "macos", target_os = "windows")
+    any(target_os = "macos", target_os = "windows", target_os = "linux")
 ))]
 mod work_resource;
-#[cfg(feature = "agentic-browser")]
+#[cfg(all(
+    feature = "agentic-browser",
+    any(target_os = "macos", target_os = "windows", target_os = "linux")
+))]
 pub(crate) use work_resource::visual_store::{FreshNativeStore, FreshStoreLoss};
 #[cfg(any(target_os = "macos", target_os = "windows"))]
 mod work_session_presence;
@@ -69,16 +72,13 @@ mod work_session_presence;
 mod work_windows;
 #[cfg(all(
     feature = "agentic-browser",
-    any(target_os = "macos", target_os = "windows")
+    any(target_os = "macos", target_os = "windows", target_os = "linux")
 ))]
 pub(crate) use work_resource::notify_work_resource;
 
 #[cfg(test)]
 pub(crate) use dispatch::make_unavailable_for_test;
-#[cfg(all(
-    feature = "agentic-browser",
-    any(target_os = "macos", target_os = "windows")
-))]
+#[cfg(feature = "agentic-browser")]
 pub(crate) use dispatch::try_with_agent_context_terminal;
 pub(crate) use dispatch::try_with_discard_state_erasure;
 #[cfg(target_os = "macos")]
@@ -480,12 +480,12 @@ pub(crate) struct EngineHost {
     // feature-gated private owner is the only native identity projection.
     #[cfg(all(
         feature = "agentic-browser",
-        any(target_os = "macos", target_os = "windows")
+        any(target_os = "macos", target_os = "windows", target_os = "linux")
     ))]
     agent_contexts: HashMap<zephium_agentic::ContextId, agent_context::AgentOwnedContext>,
     #[cfg(all(
         feature = "agentic-browser",
-        any(target_os = "macos", target_os = "windows")
+        any(target_os = "macos", target_os = "windows", target_os = "linux")
     ))]
     work_resources: HashMap<zephium_agentic::ContextId, work_resource::WorkNativeResource>,
     // Native cookie callbacks retain their exact port task and deadline owner

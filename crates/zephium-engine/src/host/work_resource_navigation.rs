@@ -526,6 +526,10 @@ impl WorkNativeResource {
                         {
                             true
                         }
+                        #[cfg(all(unix, not(target_os = "macos")))]
+                        {
+                            false
+                        }
                     }
                     && {
                         #[cfg(target_os = "macos")]
@@ -560,6 +564,10 @@ impl WorkNativeResource {
                                         })
                                 }),
                             )
+                        }
+                        #[cfg(all(unix, not(target_os = "macos")))]
+                        {
+                            false
                         }
                     }
             });

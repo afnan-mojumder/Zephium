@@ -1,16 +1,39 @@
 //! Linux adapter. Content views are built into a gtk::Fixed owned by the
 //! composition root; the stage positions them and draws the drop indicator.
 
+#[cfg(feature = "agentic-browser")]
+mod agent_context;
 mod content_filter;
 mod find;
 mod stage;
+#[cfg(feature = "agentic-browser")]
+mod work_presentation;
 
+#[allow(dead_code)]
 pub(crate) fn external_app_name(_url: &str) -> Option<String> {
     None
 }
 
 pub(crate) fn open_external_app(_url: &str) -> bool {
     false
+}
+
+#[cfg(feature = "agentic-browser")]
+pub(crate) use agent_context::{AgentHistoryBackTicket, AgentOwnedView};
+#[cfg(feature = "agentic-browser")]
+pub(crate) use content_filter::install_on_view as install_content_policy_on_view;
+#[cfg(feature = "agentic-browser")]
+pub(crate) use work_presentation::{
+    PresentationState, WorkHumanPresentation, WorkObservationPresentation,
+};
+
+#[cfg(feature = "agentic-browser")]
+pub(crate) fn capture_work_frame(
+    _view: &wry::WebView,
+    completion: impl FnOnce(Option<(u32, u32, Vec<u8>)>) + 'static,
+) -> bool {
+    completion(None);
+    true
 }
 
 pub(crate) use content_filter::{
@@ -1479,7 +1502,8 @@ mod tests {
         assert_eq!(
             enforce_runtime_version(
                 (2, 54, 1),
-                zephium_core::webkitgtk::SECURITY_FLOOR_REVIEW_DEADLINE_EXCLUSIVE_UNIX_SECONDS,
+                zephium_core::webkitgtk::SECURITY_FLOOR_REVIEW_DEADLINE_EXCLUSIVE_UNIX_SECONDS
+                    + zephium_core::runtime_security::RUNTIME_REVIEW_GRACE_SECONDS,
             ),
             Ok(
                 zephium_core::runtime_security::RuntimeSecurityAdvisories::from_advisory(

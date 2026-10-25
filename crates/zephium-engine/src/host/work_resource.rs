@@ -376,9 +376,13 @@ impl WorkNativeResource {
                 {
                     self.screenshot.is_some()
                 }
-                #[cfg(not(target_os = "macos"))]
+                #[cfg(target_os = "windows")]
                 {
                     self.human_return.is_some()
+                }
+                #[cfg(all(unix, not(target_os = "macos")))]
+                {
+                    false
                 }
             }
     }
@@ -1516,6 +1520,8 @@ impl EngineHost {
         );
         #[cfg(target_os = "windows")]
         let view = self.build_windows_work_view(&guard, &mut resource.native_resource);
+        #[cfg(all(unix, not(target_os = "macos")))]
+        let view: Result<crate::platform::imp::AgentOwnedView, ()> = Err(());
         let Ok(view) = view else {
             #[cfg(feature = "native-agentic-work-lifetime-diagnostic")]
             guard.record_failure_cause(ResourceFailureCause::NativeAdmission(

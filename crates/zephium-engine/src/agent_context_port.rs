@@ -20,7 +20,7 @@ use zephium_agentic::{
     SemanticScreenshotNativeCompletion, SemanticScreenshotNativeRequest,
     MAX_PENDING_NATIVE_CONTEXT_TASKS, MAX_PENDING_SEMANTIC_SCREENSHOTS,
 };
-#[cfg(any(target_os = "macos", target_os = "windows"))]
+#[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
 use zephium_agentic::{
     ContextJoin, ContextNavigationReplacement, ContextNavigationTarget, ContextOperationKind,
     ContextRendererLoss,
@@ -43,18 +43,18 @@ pub(crate) use foreground_probe::AgentForegroundProbeTask;
 #[cfg(all(target_os = "macos", feature = "native-agentic-work-resource-probe"))]
 #[path = "agent_work_resource_probe_port.rs"]
 pub(crate) mod resource_witness;
-#[cfg(any(target_os = "macos", target_os = "windows"))]
+#[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
 #[path = "work_resource_port.rs"]
 mod work_resource;
 #[cfg(all(
-    any(target_os = "macos", target_os = "windows"),
+    any(target_os = "macos", target_os = "windows", target_os = "linux"),
     feature = "native-agentic-work-lifetime-diagnostic"
 ))]
 #[path = "work_resource_failure_diagnostic.rs"]
 pub(crate) mod work_resource_failure_diagnostic;
-#[cfg(any(target_os = "macos", target_os = "windows"))]
+#[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
 pub use work_resource::{work_browser_monotonic_deadline, work_browser_monotonic_now};
-#[cfg(any(target_os = "macos", target_os = "windows"))]
+#[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
 pub(crate) use work_resource::{
     WorkActionTask, WorkHistoryBackTask, WorkLifecycleTask, WorkNavigationTask,
     WorkNotificationPermit, WorkObservationTask, WorkResourceGuard,
@@ -64,7 +64,7 @@ pub(crate) use work_resource::{
 /// so a failed page task can name what it was waiting for.
 static ACTION_TIMEOUT_STAGE: std::sync::Mutex<&'static str> = std::sync::Mutex::new("");
 
-#[cfg(any(target_os = "macos", target_os = "windows"))]
+#[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
 pub(crate) fn note_action_timeout_stage(stage: &'static str) {
     *ACTION_TIMEOUT_STAGE
         .lock()
@@ -182,7 +182,7 @@ struct AgentPortAdmission {
     fatal: Arc<dyn Fn(&'static str) + Send + Sync>,
     fatal_reported: AtomicBool,
     lineage_failed: Option<Arc<AtomicBool>>,
-    #[cfg(any(target_os = "macos", target_os = "windows"))]
+    #[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
     work: Mutex<work_resource::WorkIngress>,
 }
 
@@ -194,7 +194,7 @@ impl AgentPortAdmission {
             fatal,
             fatal_reported: AtomicBool::new(false),
             lineage_failed: None,
-            #[cfg(any(target_os = "macos", target_os = "windows"))]
+            #[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
             work: Mutex::new(work_resource::WorkIngress::default()),
         }
     }
@@ -1662,7 +1662,7 @@ impl AgentBrowserPort for EngineAgentBrowserPort {
 
     #[cfg(all(
         feature = "agentic-browser",
-        any(target_os = "macos", target_os = "windows")
+        any(target_os = "macos", target_os = "windows", target_os = "linux")
     ))]
     fn latest_work_frame(
         &self,
@@ -1670,7 +1670,7 @@ impl AgentBrowserPort for EngineAgentBrowserPort {
     ) -> Option<Arc<zephium_agentic::WorkBrowserFrame>> {
         crate::host::work_frames::latest(resource.identity().context())
     }
-    #[cfg(any(target_os = "macos", target_os = "windows"))]
+    #[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
     fn supports_work_resource_history_back(&self) -> bool {
         #[cfg(target_os = "macos")]
         {
@@ -1681,9 +1681,13 @@ impl AgentBrowserPort for EngineAgentBrowserPort {
         {
             true
         }
+        #[cfg(target_os = "linux")]
+        {
+            true
+        }
     }
 
-    #[cfg(any(target_os = "macos", target_os = "windows"))]
+    #[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
     fn work_resource_act(
         &self,
         request: zephium_agentic::WorkBrowserActionRequest,
@@ -1691,7 +1695,7 @@ impl AgentBrowserPort for EngineAgentBrowserPort {
     ) -> zephium_agentic::WorkBrowserActionDispatch {
         self.schedule_work_action(request, completion)
     }
-    #[cfg(any(target_os = "macos", target_os = "windows"))]
+    #[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
     fn work_resource_navigate(
         &self,
         request: zephium_agentic::WorkBrowserNavigationRequest,
@@ -1699,7 +1703,7 @@ impl AgentBrowserPort for EngineAgentBrowserPort {
     ) -> zephium_agentic::WorkBrowserNavigationDispatch {
         self.schedule_work_navigation(request, completion)
     }
-    #[cfg(any(target_os = "macos", target_os = "windows"))]
+    #[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
     fn work_resource_back(
         &self,
         request: zephium_agentic::WorkBrowserHistoryBackRequest,
@@ -1707,7 +1711,7 @@ impl AgentBrowserPort for EngineAgentBrowserPort {
     ) -> zephium_agentic::WorkBrowserHistoryBackDispatch {
         self.schedule_work_history_back(request, completion)
     }
-    #[cfg(any(target_os = "macos", target_os = "windows"))]
+    #[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
     fn work_resource_lifecycle(
         &self,
         request: zephium_agentic::WorkBrowserResourceRequest,
@@ -1715,7 +1719,7 @@ impl AgentBrowserPort for EngineAgentBrowserPort {
     ) -> zephium_agentic::WorkBrowserResourceDispatch {
         self.schedule_work_lifecycle(request, completion)
     }
-    #[cfg(any(target_os = "macos", target_os = "windows"))]
+    #[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
     fn work_resource_observe(
         &self,
         request: zephium_agentic::WorkBrowserObservationRequest,
