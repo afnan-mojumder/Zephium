@@ -539,15 +539,20 @@ impl SealedPrivateDirectory {
             };
         }
 
-        #[cfg(target_os = "macos")]
-        if self.prepare_publication_root_unlocked().is_err() {
-            // A committed/ambiguous mode transition never returns the old
-            // capability. Best-effort sealing is cleanup, not a rename retry.
-            let _ = self.reseal_publication_root_unlocked();
-            let error = terminal_settlement_error(&self.lease);
-            drop(operation);
-            return Err(PrivateFsTransitionError::terminal(error));
-        }
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
+        let transitioned_root_mode = if cfg!(target_os = "macos") || !same_parent {
+            if self.prepare_publication_root_unlocked().is_err() {
+                // A committed/ambiguous mode transition never returns the old
+                // capability. Best-effort sealing is cleanup, not a rename retry.
+                let _ = self.reseal_publication_root_unlocked();
+                let error = terminal_settlement_error(&self.lease);
+                drop(operation);
+                return Err(PrivateFsTransitionError::terminal(error));
+            }
+            true
+        } else {
+            false
+        };
 
         let rename = || {
             platform::atomic_publish_noreplace_between(
@@ -584,8 +589,8 @@ impl SealedPrivateDirectory {
 
         // Use the original descriptor, never either mutable name, for reseal.
         // This runs after both success and refusal, before classifying either.
-        #[cfg(target_os = "macos")]
-        if self.reseal_publication_root_unlocked().is_err() {
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
+        if transitioned_root_mode && self.reseal_publication_root_unlocked().is_err() {
             let error = terminal_settlement_error(&self.lease);
             drop(operation);
             return Err(PrivateFsTransitionError::terminal(error));
@@ -685,10 +690,10 @@ impl SealedPrivateDirectory {
         }
     }
 
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
     fn prepare_publication_root_unlocked(&self) -> Result<(), PrivateFsError> {
         platform::set_directory_mode(&self.core.handle, DirectoryMode::Writable)?;
-        #[cfg(test)]
+        #[cfg(all(test, target_os = "macos"))]
         if self
             .lease
             .take_lifecycle_fault(crate::lease::LifecycleFault::PublishRootWritableCommitted)
@@ -699,9 +704,9 @@ impl SealedPrivateDirectory {
         self.lease.verify_authority()
     }
 
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
     fn reseal_publication_root_unlocked(&self) -> Result<(), PrivateFsError> {
-        #[cfg(test)]
+        #[cfg(all(test, target_os = "macos"))]
         if self
             .lease
             .take_lifecycle_fault(crate::lease::LifecycleFault::PublishRootResealRefused)
@@ -709,7 +714,7 @@ impl SealedPrivateDirectory {
             return Err(PrivateFsError::Io);
         }
         platform::set_directory_mode(&self.core.handle, DirectoryMode::Sealed)?;
-        #[cfg(test)]
+        #[cfg(all(test, target_os = "macos"))]
         if self
             .lease
             .take_lifecycle_fault(crate::lease::LifecycleFault::PublishRootResealCommitted)
@@ -717,7 +722,7 @@ impl SealedPrivateDirectory {
             return Err(PrivateFsError::Io);
         }
         platform::sync_directory(&self.core.handle)?;
-        #[cfg(test)]
+        #[cfg(all(test, target_os = "macos"))]
         if self
             .lease
             .take_lifecycle_fault(crate::lease::LifecycleFault::PublishRootResealSync)
