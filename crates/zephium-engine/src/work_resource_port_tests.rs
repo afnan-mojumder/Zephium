@@ -2107,3 +2107,14 @@ fn anonymous_retirement_dispatch_cannot_retain_its_own_session() {
     assert!(!weak_session.is_current());
     assert_eq!(calls.load(Ordering::SeqCst), 1);
 }
+
+#[cfg(not(any(target_os = "macos", target_os = "windows")))]
+#[test]
+fn linux_notification_dispatch_settles_refused_task_and_clears_pending_state() {
+    let (_, _, guard) = setup();
+    assert!(guard.begin_notification());
+    assert!(!guard.callbacks_drained());
+    guard.dispatch_notification(|| unreachable!("refused Linux notification task must not run"));
+    assert!(guard.callbacks_drained());
+    assert!(!guard.is_healthy());
+}

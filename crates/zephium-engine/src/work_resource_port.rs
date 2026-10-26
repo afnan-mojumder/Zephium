@@ -300,10 +300,6 @@ impl WorkResourceGuard {
     }
 
     pub(crate) fn dispatch_notification(&self, task: impl FnOnce() + Send + 'static) {
-        #[cfg(all(not(any(target_os = "macos", target_os = "windows")), not(test)))]
-        {
-            let _ = task;
-        }
         #[cfg(test)]
         if let Some(dispatch) = self.notification_dispatch.lock().unwrap().clone() {
             if !dispatch(Box::new(task)) {
@@ -311,6 +307,12 @@ impl WorkResourceGuard {
             }
             #[allow(clippy::needless_return)]
             return;
+        }
+        #[cfg(not(any(target_os = "macos", target_os = "windows")))]
+        {
+            self.consume_notification();
+            self.fail();
+            let _ = task;
         }
         #[cfg(target_os = "macos")]
         dispatch2::DispatchQueue::main().exec_async(task);
